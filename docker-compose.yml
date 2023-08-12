@@ -1,0 +1,18 @@
+version: '3.0'
+
+services:
+  mysql:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_DATABASE: 'mysqlkv'
+      MYSQL_USER: 'mysqlkv_user'
+      MYSQL_PASSWORD: 'mysqlkv'
+      MYSQL_ROOT_PASSWORD: 'mysqlkv'
+    ports:
+      - '6035:3306'
+    volumes:
+      - my-db:/var/lib/mysql
+
+volumes:
+  my-db:
