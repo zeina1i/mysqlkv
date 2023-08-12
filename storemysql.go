@@ -61,7 +61,7 @@ func (s *StoreMySQL) getKV(k string) (string, error) {
 select k,v from kvs
 where
       k = ?
-      and (expiry > CURRENT_TIMESTAMP() or expiry is null);
+      and (expiry > UNIX_TIMESTAMP() or expiry is null);
 `
 	var kv kv
 
