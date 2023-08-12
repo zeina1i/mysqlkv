@@ -3,7 +3,7 @@
 ## supported commands
 * Get
 * Put
-* Delete
+* Del
 * TTL
 
 ## Examples
