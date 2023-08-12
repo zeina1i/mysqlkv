@@ -1,4 +1,4 @@
-#MySQL key-value store
+# MySQL key-value store
 
 ## supported commands
 * Get
