@@ -6,5 +6,5 @@
 * Delete
 * TTL
 
-# Examples
+## Examples
 Take a look at `kvservice_test.go`
