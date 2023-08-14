@@ -2,9 +2,12 @@ package mysqlkv
 
 type KVService struct {
 	store Store
+	gc    *GC
 }
 
-func NewKVService(store Store) *KVService {
+func NewKVService(store Store, gc *GC) *KVService {
+	gc.collect()
+
 	return &KVService{store: store}
 }
 

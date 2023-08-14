@@ -104,7 +104,17 @@ where k = :k
 	return err
 }
 
-//
-//func (m *StoreMySQL) batchDeleteExpiredKVs(num int) {
-//
-//}
+func (s *StoreMySQL) batchDeleteExpiredKVs(limit int) error {
+	query := `
+delete from kvs
+where expiry < UNIX_TIMESTAMP()
+limit :limit
+`
+	m := map[string]interface{}{
+		"limit": limit,
+	}
+
+	_, err := s.db.NamedExec(query, m)
+
+	return err
+}

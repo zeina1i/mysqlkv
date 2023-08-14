@@ -18,7 +18,10 @@ func TestKVService_PutThenGetThenDeleteThenGet(t *testing.T) {
 		t.Error(err)
 	}
 
-	service := NewKVService(store)
+	done := make(chan bool)
+	gc := newGC(store, 1*time.Minute, done)
+
+	service := NewKVService(store, gc)
 
 	inputK := "hello"
 	inputV := "bye"
@@ -59,7 +62,10 @@ func TestKVService_PutThenTTLThenGet(t *testing.T) {
 		t.Error(err)
 	}
 
-	service := NewKVService(store)
+	done := make(chan bool)
+	gc := newGC(store, 1*time.Minute, done)
+
+	service := NewKVService(store, gc)
 
 	inputK := "hello"
 	inputV := "bye"
