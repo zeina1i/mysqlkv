@@ -7,7 +7,7 @@ import (
 )
 
 func TestKVService_PutThenGetThenDeleteThenGet(t *testing.T) {
-	store, err := NewStoreMysql(&MySQLConfig{
+	executor, err := NewSingleNodeExecutor(&MySQLConfig{
 		Username: "mysqlkv_user",
 		Password: "mysqlkv",
 		Host:     "localhost",
@@ -19,9 +19,9 @@ func TestKVService_PutThenGetThenDeleteThenGet(t *testing.T) {
 	}
 
 	done := make(chan bool)
-	gc := newGC(store, 1*time.Minute, done)
+	gc := newGC(executor, 1*time.Minute, done)
 
-	service := NewKVService(store, gc)
+	service := NewKVService(executor, gc)
 
 	inputK := "hello"
 	inputV := "bye"
@@ -51,7 +51,7 @@ func TestKVService_PutThenGetThenDeleteThenGet(t *testing.T) {
 }
 
 func TestKVService_PutThenTTLThenGet(t *testing.T) {
-	store, err := NewStoreMysql(&MySQLConfig{
+	executor, err := NewSingleNodeExecutor(&MySQLConfig{
 		Username: "mysqlkv_user",
 		Password: "mysqlkv",
 		Host:     "localhost",
@@ -63,9 +63,9 @@ func TestKVService_PutThenTTLThenGet(t *testing.T) {
 	}
 
 	done := make(chan bool)
-	gc := newGC(store, 1*time.Minute, done)
+	gc := newGC(executor, 1*time.Minute, done)
 
-	service := NewKVService(store, gc)
+	service := NewKVService(executor, gc)
 
 	inputK := "hello"
 	inputV := "bye"

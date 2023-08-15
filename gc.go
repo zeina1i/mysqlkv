@@ -6,16 +6,16 @@ import (
 )
 
 type GC struct {
-	store  Store
-	ticker *time.Ticker
-	done   chan bool
+	executor Executor
+	ticker   *time.Ticker
+	done     chan bool
 }
 
-func newGC(store Store, interval time.Duration, done chan bool) *GC {
+func newGC(executor Executor, interval time.Duration, done chan bool) *GC {
 	return &GC{
-		store:  store,
-		ticker: time.NewTicker(interval),
-		done:   done,
+		executor: executor,
+		ticker:   time.NewTicker(interval),
+		done:     done,
 	}
 }
 
@@ -27,7 +27,7 @@ func (gc *GC) collect() (*time.Ticker, chan bool) {
 				return
 			case t := <-gc.ticker.C:
 				fmt.Println(t)
-				err := gc.store.batchDeleteExpiredKVs(1000)
+				err := gc.executor.batchDeleteExpiredKVs(1000)
 				if err != nil {
 					fmt.Println(err)
 				}

@@ -3,24 +3,15 @@ package mysqlkv
 import (
 	"strconv"
 
-	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 )
 
-type MySQLConfig struct {
-	Username string
-	Password string
-	Host     string
-	Port     int
-	DB       string
-}
-
-type StoreMySQL struct {
+type SingleNodeExecutor struct {
 	db     *sqlx.DB
 	config *MySQLConfig
 }
 
-func NewStoreMysql(config *MySQLConfig) (*StoreMySQL, error) {
+func NewSingleNodeExecutor(config *MySQLConfig) (*SingleNodeExecutor, error) {
 	dsn := config.Username + ":" + config.Password + "@" + "(" + config.Host + ":" + strconv.Itoa(config.Port) + ")/" + config.DB + "?parseTime=true"
 	db, err := sqlx.Connect("mysql", dsn)
 	if err != nil {
@@ -28,13 +19,13 @@ func NewStoreMysql(config *MySQLConfig) (*StoreMySQL, error) {
 		return nil, err
 	}
 
-	return &StoreMySQL{
+	return &SingleNodeExecutor{
 		db:     db,
 		config: config,
 	}, nil
 }
 
-func (s *StoreMySQL) InitializeDB() error {
+func (e *SingleNodeExecutor) initializeDB() error {
 	stmt := `
 create table if not exists kvs
 (
@@ -48,7 +39,7 @@ create table if not exists kvs
 alter table kvs
     add primary key (k);
 `
-	_, err := s.db.Exec(stmt)
+	_, err := e.db.Exec(stmt)
 	if err != nil {
 		return err
 	}
@@ -56,7 +47,7 @@ alter table kvs
 	return nil
 }
 
-func (s *StoreMySQL) getKV(k string) (string, error) {
+func (e *SingleNodeExecutor) getKV(k string) (string, error) {
 	query := `
 select k,v from kvs
 where
@@ -65,7 +56,7 @@ where
 `
 	var kv kv
 
-	err := s.db.Get(&kv, query, k)
+	err := e.db.Get(&kv, query, k)
 	if err != nil {
 		return "", err
 	}
@@ -73,7 +64,7 @@ where
 	return kv.V, nil
 }
 
-func (s *StoreMySQL) addOrUpdateKV(k string, v string) error {
+func (e *SingleNodeExecutor) addOrUpdateKV(k string, v string) error {
 	query := `
 replace into kvs
 value (:k, :v, null)
@@ -83,12 +74,12 @@ value (:k, :v, null)
 		"v": v,
 	}
 
-	_, err := s.db.NamedExec(query, m)
+	_, err := e.db.NamedExec(query, m)
 
 	return err
 }
 
-func (s *StoreMySQL) updateKVExpiry(k string, expiry int64) error {
+func (e *SingleNodeExecutor) updateKVExpiry(k string, expiry int64) error {
 	query := `
 update kvs
 set expiry = :expiry
@@ -99,12 +90,12 @@ where k = :k
 		"k":      k,
 	}
 
-	_, err := s.db.NamedExec(query, m)
+	_, err := e.db.NamedExec(query, m)
 
 	return err
 }
 
-func (s *StoreMySQL) batchDeleteExpiredKVs(limit int) error {
+func (e *SingleNodeExecutor) batchDeleteExpiredKVs(limit int) error {
 	query := `
 delete from kvs
 where expiry < UNIX_TIMESTAMP()
@@ -114,7 +105,7 @@ limit :limit
 		"limit": limit,
 	}
 
-	_, err := s.db.NamedExec(query, m)
+	_, err := e.db.NamedExec(query, m)
 
 	return err
 }
