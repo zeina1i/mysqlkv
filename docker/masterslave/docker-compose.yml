@@ -1,0 +1,56 @@
+version: '3'
+services:
+  mysql_master:
+    image: mysql:5.7
+    env_file:
+      - ./master/mysql_master.env
+    container_name: "mysql_master"
+    restart: "no"
+    ports:
+      - 4406:3306
+    volumes:
+      - ./master/conf/mysql.conf.cnf:/etc/mysql/conf.d/mysql.conf.cnf
+      - master-db:/var/lib/mysql
+      - master-logs:/var/log/mysql
+    networks:
+      - overlay
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 30s
+      timeout: 20s
+      retries: 10
+      start_period: 30s
+
+  mysql_slave:
+    image: mysql:5.7
+    env_file:
+      - ./slave/mysql_slave.env
+    container_name: "mysql_slave"
+    restart: "no"
+    ports:
+      - 5506:3306
+    depends_on:
+      mysql_master:
+        condition: service_healthy
+    volumes:
+      - ./slave/conf/mysql.conf.cnf:/etc/mysql/conf.d/mysql.conf.cnf
+      - slave-db:/var/lib/mysql
+      - slave-logs:/var/log/mysql
+    networks:
+      - overlay
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 30s
+      timeout: 20s
+      retries: 10
+      start_period: 30s
+
+volumes:
+  master-db:
+  master-logs:
+  slave-db:
+  slave-logs:
+
+networks:
+  overlay:
+
